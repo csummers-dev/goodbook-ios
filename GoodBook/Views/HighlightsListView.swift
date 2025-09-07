@@ -8,7 +8,8 @@ struct HighlightsListView: View {
 	var body: some View {
 		List(store.highlights) { h in
 			VStack(alignment: .leading) {
-				Text("\(h.range.bookId) \(h.range.chapter):\(h.range.startVerse)\(h.range.endVerse == h.range.startVerse ? "" : "-\(h.range.endVerse)")")
+				let displayRange = h.wordSpan?.toVerseRange() ?? h.range
+				Text("\(displayRange.bookId) \(displayRange.chapter):\(displayRange.startVerse)\(displayRange.endVerse == displayRange.startVerse ? "" : "-\(displayRange.endVerse)")")
 					.font(.headline)
 				if let note = h.note, !note.isEmpty {
 					Text(note).font(.subheadline)

@@ -4,13 +4,29 @@
 
 An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
 
+## Vision
+
+- Beautiful, clean, minimal Bible reading experience with no distractions.
+- Absolutely no ads, telemetry, analytics, or tracking.
+- Always free and open source.
+- Private by default; your data lives on your device.
+
 ## Highlights
 
 - Modular architecture: Models, Services, ViewModels, Views
-- Local JSON Bible provider (sample ESV data) with robust bundle lookup
-- Translation-agnostic highlights with color and optional notes
-- Full-screen scrollable Reading view; toggle highlight visibility; translation switcher
-- Highlights list (grouped), Settings (theme, font size)
+- Privacy-first, offline-first: no analytics/tracking; all core reading is local
+- Reader: full-screen scroll, native iOS text selection (word-by-word, multi-verse)
+  - Continuous background highlighting (includes spaces between words for clarity)
+  - Toggle to show/hide highlights; translation picker in toolbar
+  - Sidebar drawer navigation with pinned section headers and availability states
+- Highlights: create/edit/delete with color coding and optional notes
+  - Translation-agnostic storage using `VerseRange`; precise `WordSpan` retained for rendering
+  - Persistence to local JSON with `HighlightStore`
+- Local JSON Bible provider with robust bundle lookup
+  - Supports `AppResources/Bibles/<TRANSLATION>/<Book>.json`; placeholder data seeded for all 66 books
+- Highlights list view (by verse span); Settings for theme and reader font size
+- Privacy-first: no analytics or tracking; no third-party SDKs
+- Offline-first: reading works without a network connection
 
 ## Project structure
 
@@ -21,7 +37,8 @@ An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
   - `ViewModels/` — screen state (`ReadingViewModel`, `HighlightsListViewModel`)
   - `Views/` — SwiftUI screens (`ReadingView`, `ContentView`, `SettingsView`, etc.)
 - `AppResources/` — bundled data and assets copied as a folder reference
-  - `Bibles/<TRANSLATION>/<Book>.json` (e.g., `Bibles/ESV/John.json`)
+  - `Bibles/<TRANSLATION>/<Book>.json` (e.g., `Bibles/KJV/John.json`)
+  - `Images/README/` — screenshots and images referenced by the README
 - `project.yml` — XcodeGen manifest for deterministic project generation
 
 ## Requirements
@@ -59,6 +76,12 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - ViewModels orchestrate loading, persistence, and UI state
   - Services encapsulate IO (bundle JSON, user defaults, local files)
 
+## Privacy
+
+- No analytics, tracking, or third-party SDKs.
+- No external network calls for core reading; content is bundled locally.
+- Highlights and settings are stored on-device. Future cloud features will be opt-in.
+
 - Services
   - `BibleDataProvider` protocol with `LocalJSONBibleProvider` implementation
     - Searches multiple bundle layouts: `Bibles/...`, `AppResources/Bibles/...`, and fallbacks
@@ -90,6 +113,19 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Book row: `sidebar.book.<BookId>`
   - UI tests assert section headers exist to prevent regressions where headers are not visible.
 
+## Screenshots
+
+Place images in `AppResources/Images/README/`:
+
+- `AppResources/Images/README/app-icon-readme.png` — app icon preview used in README
+- `AppResources/Images/README/john-example-readme.png` — example reading screenshot (e.g., John 10, KJV)
+
+Embedded below once added:
+
+![App Icon](AppResources/Images/README/app-icon-readme.png)
+
+![Reading Example (John 10, KJV)](AppResources/Images/README/john-example-readme.png)
+
 ## Feature status
 
 - Completed
@@ -107,15 +143,24 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
     - Editor lifecycle: Save/Cancel dismiss the editor and return to Reading
   - Settings for preferred theme and reader font size (stored in `UserDefaults`)
   - Basic Highlights list view; basic navigation to Settings and Highlights
+  - Native iOS text selection in reader (word-by-word, multi-verse) with bottom action bar
+  - Reader text sizing/wrapping fixed: no cutoff; full-screen scrollable content
+  - Verse numbers styled smaller and higher (superscript-like), theme-aware lighter color
+  - Highlights visually include spaces between words for continuous background
 
 - In progress
-  - Selection UX: refine long-press selection to true word-by-word and multi-verse ranges
-    - Current state: verse-level approximation with action bar and notes option
   - Highlights list: grouping by book → chapter and filtering/sorting by color
-  - Multi-translation datasets beyond ESV (switching is wired; assets to be added)
+  - Multi-translation datasets beyond KJV (switching is wired; assets to be added)
   - Navigator to open any book (single-book demo now; code prepared for expansion)
 
 - Planned
+  - Reader display modes: verse-by-verse and paragraph layout
+  - Toggle to show/hide verse numbers
+  - Words of Jesus styling (red or blue, configurable)
+  - Contributor credits in future About page (UI, design, UX, code)
+  - App icon
+  - Font type selections
+  - Sharing highlights with others
   - Cloud sync/backup for highlights and settings
   - Additional themes and font options; theme presets
   - Import/export of highlights and notes
@@ -126,6 +171,10 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Unit/UI tests and snapshot tests for views
 
 Notes: This section is intended to be living documentation. Maintain by moving items between lists as features ship or begin.
+
+## Known issues
+
+- Settings theme change does not update the Settings window color until it is closed and re-opened. Acceptance: the Settings view should update live to match the selected theme.
 
 ## Testing
 
@@ -153,10 +202,9 @@ xcodebuild -project GoodBook.xcodeproj -scheme GoodBook -sdk iphonesimulator -co
 Local verification (2025-09-07):
 
 - Built with `xcodegen generate` and `xcodebuild test`
-- Unit tests: 8 passed
-- UI tests: 3 passed
+- All unit tests passing
+- All UI tests passing
 - Simulator: iPhone 16 (iOS 18.6)
-- Commit: a47b509
 
 - UI test mode
   - The app checks for `-uiTestMode` launch argument and resets highlights for deterministic runs.
@@ -173,7 +221,7 @@ Local verification (2025-09-07):
 
 Path in app bundle (folder reference):
 ```
-AppResources/Bibles/ESV/John.json
+AppResources/Bibles/KJV/John.json
 ```
 
 Schema:
@@ -201,7 +249,7 @@ Add more translations/books by placing additional JSON files under `AppResources
 To support UI development across multiple translations before full text is added, the app includes placeholder JSON files for all 66 canonical books across supported translations.
 
 - Translations: `KJV`, `NKJV`, `ESV`, `NIV`, `CSB`, `NRSV`
-- Location: `AppResources/Bibles/<TRANSLATION>/<BookId>.json` (e.g., `AppResources/Bibles/ESV/Gen.json`)
+- Location: `AppResources/Bibles/<TRANSLATION>/<BookId>.json` (e.g., `AppResources/Bibles/KJV/Gen.json`)
 - Content: two stub verses in chapter 1 with marker text like `[Placeholder NIV] Genesis 1:1`
 - Apocrypha: opt-in; currently only `Tobit (Tob)` seeded for demonstration
 
@@ -225,7 +273,7 @@ Loading behavior:
     ```
 
 - Reading view shows spinner only
-  - Verify the currently selected translation has bundled data (start with ESV)
+  - Verify the currently selected translation has bundled data (start with KJV; John 10 is bundled)
   - Check the small error banner at the top; if present, it will show the underlying error from the provider
 
 - Simulator noise (safe to ignore)

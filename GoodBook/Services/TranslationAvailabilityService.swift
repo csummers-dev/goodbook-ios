@@ -4,12 +4,14 @@ import Foundation
 /// - What: Checks for presence of `AppResources/Bibles/<TRANSLATION>/<BookId>.json` in the bundle.
 /// - Why: Drives UI availability (enabled/disabled) without decoding content.
 final class TranslationAvailabilityService {
+    // MARK: - Init
     private let bundle: Bundle
 
     init(bundle: Bundle = .main) {
         self.bundle = bundle
     }
 
+    // MARK: - API
     /// Returns true if the JSON resource for the given book/translation exists in the bundle.
     func isBookAvailable(bookId: String, translation: Translation) -> Bool {
         let fileName = bookId

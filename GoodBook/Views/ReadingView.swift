@@ -1,24 +1,32 @@
 import SwiftUI
 
-/// Reading screen that displays a book's chapters and verses.
-/// - Supports: highlight visibility toggle, long-press selection with action bar,
-///   context menu per verse, and optional note editing.
+/// Reading screen for rendering chapters and managing highlights and selection.
+/// - Supports: highlight visibility toggle, native selection with bottom action bar,
+///   context menus per verse, and optional note editing.
 struct ReadingView: View {
+	// MARK: - Environment
 	@EnvironmentObject private var env: AppEnvironment
 	@EnvironmentObject private var settings: SettingsStore
 	@EnvironmentObject private var highlightStore: HighlightStore
 
+	// MARK: - State
 	@StateObject private var viewModel: ReadingViewModel
+	/// If set, the note editor sheet should present for this context.
 	@State private var editorContext: (range: VerseRange, existing: Highlight?)?
+	/// Transient selection representation used to drive the action bar and notes toggle.
 	@State private var activeSelection: TextSelection?
+	/// Controls visibility of the bottom selection action bar.
 	@State private var isActionBarVisible: Bool = false
     @State private var editorSheet: EditorSheet?
+	/// Word-level selection produced by native iOS selection handles.
+	@State private var wordSpanSelection: WordSpan?
 
 	init(bookId: String) {
 		// Initialize with minimal dependencies; will be configured on appear
 		_viewModel = StateObject(wrappedValue: ReadingViewModel(bookId: bookId))
 	}
 
+	// MARK: - Body
 	var body: some View {
 		Group {
 			switch viewModel.book {
@@ -30,20 +38,49 @@ struct ReadingView: View {
 						LazyVStack(alignment: .leading, spacing: 12) {
 							ForEach(book.chapters) { chapter in
 								chapterHeader(chapter)
-								ForEach(chapter.verses) { verse in
-									verseRow(bookId: book.id, chapter: chapter.number, verse: verse)
-								}
+								SelectableChapterTextView(
+									bookId: book.id,
+									chapter: chapter,
+									fontSize: CGFloat(settings.readerFontSize),
+									highlights: viewModel.isShowingHighlights ? highlightStore.highlights(for: book.id, chapter: chapter.number) : [],
+									onSelectionChange: { span in
+										wordSpanSelection = span
+										if let span {
+											// Also populate activeSelection to reuse Notes toggle plumbing
+											activeSelection = TextSelection(
+												bookId: book.id,
+												chapter: chapter.number,
+												start: span.start,
+												end: span.end,
+												notesEnabled: activeSelection?.notesEnabled ?? false
+											)
+											withAnimation { isActionBarVisible = true }
+										} else {
+											withAnimation { isActionBarVisible = false }
+										}
+									}
+								)
 							}
 						}
 						.padding(.horizontal)
 					}
+					.scrollDisabled(isActionBarVisible)
 
-					if isActionBarVisible, let selection = activeSelection {
-						selectionActionBar(selection)
+					if isActionBarVisible {
+						selectionActionBar()
+					}
+
+					// Test hook: tiny, non-interactive flag signaling active selection state
+					if isActionBarVisible {
+						Color.clear
+							.frame(width: 1, height: 1)
+							.allowsHitTesting(false)
+							.accessibilityIdentifier("reading.selection.active")
 					}
 				}
 			}
 		}
+		// MARK: - Toolbar
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				Toggle(isOn: $viewModel.isShowingHighlights) { Image(systemName: viewModel.isShowingHighlights ? "eye" : "eye.slash") }
@@ -51,15 +88,18 @@ struct ReadingView: View {
 					.accessibilityIdentifier("reading.toggle.highlights")
 			}
 		}
+		// MARK: - Sheets
 		.sheet(item: $editorSheet) { sheet in
 			HighlightEditorView(range: sheet.range, existing: sheet.existing) { highlight in
 				highlightStore.upsert(highlight)
 				closeEditor()
 			}
 		}
+		// MARK: - Observers
 		.onChange(of: settings.selectedTranslation) { _, _ in
 			Task { await viewModel.reloadForTranslationChange() }
 		}
+		// MARK: - Overlays
 		.overlay(alignment: .top) {
 			if let message = viewModel.errorMessage {
 				Text(message).font(.footnote).padding(8).background(.thinMaterial).cornerRadius(8).padding()
@@ -68,18 +108,21 @@ struct ReadingView: View {
 		.task { await initialConfigureAndLoad() }
 	}
 
+	// MARK: - Types
 	private struct EditorSheet: Identifiable {
 		let id: String
 		let range: VerseRange
 		let existing: Highlight?
 	}
 
-	/// Wire dependencies and kick off the initial load.
+	// MARK: - Lifecycle
+	/// Wires dependencies and kicks off the initial data load.
 	private func initialConfigureAndLoad() async {
 		viewModel.configure(provider: env.bibleProvider, settings: settings)
 		await viewModel.load()
 	}
 
+	// MARK: - Subviews
 	@ViewBuilder
 	private func chapterHeader(_ chapter: BibleChapter) -> some View {
 		Text("Chapter \(chapter.number)")
@@ -100,16 +143,7 @@ struct ReadingView: View {
 			.background(viewModel.isShowingHighlights ? existing?.color.color : .clear)
 			.contentShape(Rectangle())
 			.accessibilityIdentifier("reading.verse.\(chapter)-\(verse.number)")
-			.gesture(LongPressGesture(minimumDuration: 0.35).onEnded { _ in
-				// Start selection at this verse (word-level to be implemented)
-				activeSelection = TextSelection(
-					bookId: bookId,
-					chapter: chapter,
-					start: VerseWordPosition(verse: verse.number, wordIndex: 0),
-					end: VerseWordPosition(verse: verse.number, wordIndex: Int.max)
-				)
-				withAnimation { isActionBarVisible = true }
-			})
+			// Long-press approximation retained for fallback; primary path uses native selection above.
 			.contextMenu {
 				Button(action: {
 					editorContext = (range, existing)
@@ -120,17 +154,17 @@ struct ReadingView: View {
 			}
 	}
 
-	// Bottom action bar shown when a selection is active. Taps outside dismiss it.
+	/// Bottom action bar shown when a selection is active. Taps outside dismiss it.
 	@ViewBuilder
-	private func selectionActionBar(_ selection: TextSelection) -> some View {
+	private func selectionActionBar() -> some View {
 		VStack(spacing: 0) {
 			Color.black.opacity(0.001)
 				.frame(maxWidth: .infinity, maxHeight: .infinity)
 				.contentShape(Rectangle())
-				.onTapGesture { withAnimation { isActionBarVisible = false; activeSelection = nil } }
+				.onTapGesture { withAnimation { isActionBarVisible = false; activeSelection = nil; wordSpanSelection = nil } }
 
 			HStack(spacing: 16) {
-				Toggle(isOn: Binding(get: { selection.notesEnabled }, set: { value in
+				Toggle(isOn: Binding(get: { (activeSelection?.notesEnabled ?? false) }, set: { value in
 					self.activeSelection?.notesEnabled = value
 				})) {
 					Text("Notes")
@@ -139,10 +173,12 @@ struct ReadingView: View {
 
 				Spacer()
 
-				Button(action: { commitSelection(selection) }) {
+				Button(action: { commitSelection() }) {
 					Label("Highlight", systemImage: "highlighter")
 				}
+				.accessibilityIdentifier("reading.action.highlight")
 			}
+			.accessibilityIdentifier("reading.actionbar")
 			.padding(.horizontal)
 			.padding(.vertical, 12)
 			.background(.thinMaterial)
@@ -150,28 +186,43 @@ struct ReadingView: View {
 		.transition(.move(edge: .bottom))
 	}
 
-	/// Commit the temporary selection into a persisted highlight or open the note editor.
-	private func commitSelection(_ selection: TextSelection) {
-		let range = selection.toVerseRange()
-		if selection.notesEnabled {
-			// Open editor with default color from settings
-			let base = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
-			openEditor(range: range, existing: base)
-		} else {
-			let highlight = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
-			highlightStore.upsert(highlight)
+	// MARK: - Actions
+	/// Commits the temporary selection into a persisted highlight or opens the note editor.
+	private func commitSelection() {
+		if let span = wordSpanSelection {
+			let range = span.toVerseRange()
+			if activeSelection?.notesEnabled == true {
+				let base = Highlight(range: range, wordSpan: span, color: settings.lastHighlightColor, note: nil)
+				openEditor(range: range, existing: base)
+			} else {
+				let highlight = Highlight(range: range, wordSpan: span, color: settings.lastHighlightColor, note: nil)
+				highlightStore.upsert(highlight)
+			}
+		} else if let selection = activeSelection {
+			let range = selection.toVerseRange()
+			if selection.notesEnabled {
+				// Open editor with default color from settings
+				let base = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
+				openEditor(range: range, existing: base)
+			} else {
+				let highlight = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
+				highlightStore.upsert(highlight)
+			}
 		}
 		closeEditor()
 	}
 
+	/// Presents the highlight editor sheet for `range`, optionally seeding with `existing`.
 	private func openEditor(range: VerseRange, existing: Highlight?) {
 		let id = "\(range.bookId)-\(range.chapter)-\(range.startVerse)-\(range.endVerse)"
 		editorSheet = EditorSheet(id: id, range: range, existing: existing)
 	}
 
+	/// Dismisses the editor and clears selection/action bar state.
 	private func closeEditor() {
 		withAnimation { isActionBarVisible = false }
 		activeSelection = nil
+		wordSpanSelection = nil
 		editorSheet = nil
 	}
 }

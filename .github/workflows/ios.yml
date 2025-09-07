@@ -23,10 +23,20 @@ jobs:
       - name: Install XcodeGen
         run: |
           brew update
-          brew install xcodegen || true
+          # Install or ensure available, then link into Homebrew prefix
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          brew link --overwrite xcodegen || true
+          # Normalize PATH across Intel/Apple Silicon runners and Homebrew prefix
+          echo "/usr/local/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+          echo "$(brew --prefix)/bin" >> $GITHUB_PATH
+          # Verify installation and PATH resolution
+          command -v xcodegen || true
+          xcodegen -version || true
 
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: |
+          xcodegen generate
 
       - name: Cache DerivedData
         uses: actions/cache@v4

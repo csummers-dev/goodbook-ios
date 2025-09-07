@@ -8,17 +8,21 @@ protocol BibleDataProvider {
 
 /// Loads Bible data from bundled JSON. We support multiple bundle layouts.
 final class LocalJSONBibleProvider: BibleDataProvider {
+    // MARK: - Init
     private let bundle: Bundle
 
     /// Initialize with a specific bundle for resource lookup. Defaults to the app's main bundle.
     init(bundle: Bundle = .main) {
         self.bundle = bundle
     }
+
+    // MARK: - Errors
 	private struct ProviderError: LocalizedError {
 		let message: String
 		var errorDescription: String? { message }
 	}
 
+    // MARK: - BibleDataProvider
 	/// Loads and decodes a book JSON for the selected translation.
 	/// - Throws: a descriptive error if the resource cannot be located or decoded.
 	func loadBook(bookId: String, translation: Translation) async throws -> BibleBook {
@@ -31,6 +35,7 @@ final class LocalJSONBibleProvider: BibleDataProvider {
 		return try decoder.decode(BibleBook.self, from: data)
 	}
 
+    // MARK: - Resource lookup
 	/// Try several bundle layouts to find the JSON for the given book/translation.
 	/// Supports both file references and folder references copied into the app bundle.
 	private func resolveBookURL(bookId: String, translation: Translation) -> URL? {
