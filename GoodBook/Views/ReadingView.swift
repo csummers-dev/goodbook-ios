@@ -13,6 +13,8 @@ struct ReadingView: View {
 	@State private var activeSelection: TextSelection?
 	@State private var isActionBarVisible: Bool = false
     @State private var editorSheet: EditorSheet?
+	/// Word-level selection produced by native text selection handles.
+	@State private var wordSpanSelection: WordSpan?
 
 	init(bookId: String) {
 		// Initialize with minimal dependencies; will be configured on appear
@@ -30,16 +32,35 @@ struct ReadingView: View {
 						LazyVStack(alignment: .leading, spacing: 12) {
 							ForEach(book.chapters) { chapter in
 								chapterHeader(chapter)
-								ForEach(chapter.verses) { verse in
-									verseRow(bookId: book.id, chapter: chapter.number, verse: verse)
-								}
+								SelectableChapterTextView(
+									bookId: book.id,
+									chapter: chapter,
+									fontSize: CGFloat(settings.readerFontSize),
+									highlights: viewModel.isShowingHighlights ? highlightStore.highlights(for: book.id, chapter: chapter.number) : [],
+									onSelectionChange: { span in
+										wordSpanSelection = span
+										if let span {
+											// Also populate activeSelection to reuse Notes toggle plumbing
+											activeSelection = TextSelection(
+												bookId: book.id,
+												chapter: chapter.number,
+												start: span.start,
+												end: span.end,
+												notesEnabled: activeSelection?.notesEnabled ?? false
+											)
+											withAnimation { isActionBarVisible = true }
+										} else {
+											withAnimation { isActionBarVisible = false }
+										}
+									}
+								)
 							}
 						}
 						.padding(.horizontal)
 					}
 
-					if isActionBarVisible, let selection = activeSelection {
-						selectionActionBar(selection)
+					if isActionBarVisible {
+						selectionActionBar()
 					}
 				}
 			}
@@ -100,16 +121,7 @@ struct ReadingView: View {
 			.background(viewModel.isShowingHighlights ? existing?.color.color : .clear)
 			.contentShape(Rectangle())
 			.accessibilityIdentifier("reading.verse.\(chapter)-\(verse.number)")
-			.gesture(LongPressGesture(minimumDuration: 0.35).onEnded { _ in
-				// Start selection at this verse (word-level to be implemented)
-				activeSelection = TextSelection(
-					bookId: bookId,
-					chapter: chapter,
-					start: VerseWordPosition(verse: verse.number, wordIndex: 0),
-					end: VerseWordPosition(verse: verse.number, wordIndex: Int.max)
-				)
-				withAnimation { isActionBarVisible = true }
-			})
+			// Long-press approximation retained for fallback; primary path uses native selection above.
 			.contextMenu {
 				Button(action: {
 					editorContext = (range, existing)
@@ -122,15 +134,15 @@ struct ReadingView: View {
 
 	// Bottom action bar shown when a selection is active. Taps outside dismiss it.
 	@ViewBuilder
-	private func selectionActionBar(_ selection: TextSelection) -> some View {
+	private func selectionActionBar() -> some View {
 		VStack(spacing: 0) {
 			Color.black.opacity(0.001)
 				.frame(maxWidth: .infinity, maxHeight: .infinity)
 				.contentShape(Rectangle())
-				.onTapGesture { withAnimation { isActionBarVisible = false; activeSelection = nil } }
+				.onTapGesture { withAnimation { isActionBarVisible = false; activeSelection = nil; wordSpanSelection = nil } }
 
 			HStack(spacing: 16) {
-				Toggle(isOn: Binding(get: { selection.notesEnabled }, set: { value in
+				Toggle(isOn: Binding(get: { (activeSelection?.notesEnabled ?? false) }, set: { value in
 					self.activeSelection?.notesEnabled = value
 				})) {
 					Text("Notes")
@@ -139,7 +151,7 @@ struct ReadingView: View {
 
 				Spacer()
 
-				Button(action: { commitSelection(selection) }) {
+				Button(action: { commitSelection() }) {
 					Label("Highlight", systemImage: "highlighter")
 				}
 			}
@@ -151,15 +163,26 @@ struct ReadingView: View {
 	}
 
 	/// Commit the temporary selection into a persisted highlight or open the note editor.
-	private func commitSelection(_ selection: TextSelection) {
-		let range = selection.toVerseRange()
-		if selection.notesEnabled {
-			// Open editor with default color from settings
-			let base = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
-			openEditor(range: range, existing: base)
-		} else {
-			let highlight = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
-			highlightStore.upsert(highlight)
+	private func commitSelection() {
+		if let span = wordSpanSelection {
+			let range = span.toVerseRange()
+			if activeSelection?.notesEnabled == true {
+				let base = Highlight(range: range, wordSpan: span, color: settings.lastHighlightColor, note: nil)
+				openEditor(range: range, existing: base)
+			} else {
+				let highlight = Highlight(range: range, wordSpan: span, color: settings.lastHighlightColor, note: nil)
+				highlightStore.upsert(highlight)
+			}
+		} else if let selection = activeSelection {
+			let range = selection.toVerseRange()
+			if selection.notesEnabled {
+				// Open editor with default color from settings
+				let base = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
+				openEditor(range: range, existing: base)
+			} else {
+				let highlight = Highlight(range: range, color: settings.lastHighlightColor, note: nil)
+				highlightStore.upsert(highlight)
+			}
 		}
 		closeEditor()
 	}
@@ -172,6 +195,7 @@ struct ReadingView: View {
 	private func closeEditor() {
 		withAnimation { isActionBarVisible = false }
 		activeSelection = nil
+		wordSpanSelection = nil
 		editorSheet = nil
 	}
 }
