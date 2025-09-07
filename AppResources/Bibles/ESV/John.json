@@ -7,7 +7,13 @@
       "verses": [
         { "number": 10, "text": "The thief comes only to steal and kill and destroy. I came that they may have life and have it abundantly." },
         { "number": 11, "text": "I am the good shepherd. The good shepherd lays down his life for the sheep." },
-        { "number": 12, "text": "He who is a hired hand and not a shepherd, who does not own the sheep, sees the wolf coming and leaves the sheep and flees, and the wolf snatches them and scatters them." }
+        { "number": 12, "text": "He who is a hired hand and not a shepherd, who does not own the sheep, sees the wolf coming and leaves the sheep and flees, and the wolf snatches them and scatters them." },
+        { "number": 13, "text": "He flees because he is a hired hand and cares nothing for the sheep..." },
+        { "number": 14, "text": "I am the good shepherd. I know my own and my own know me..." },
+        { "number": 15, "text": "Just as the Father knows me and I know the Father; and I lay down my life for the sheep..." },
+        { "number": 16, "text": "And I have other sheep that are not of this fold. I must bring them also..." },
+        { "number": 17, "text": "For this reason the Father loves me, because I lay down my life that I may take it up again..." },
+        { "number": 18, "text": "No one takes it from me, but I lay it down of my own accord..." }
       ]
     }
   ]

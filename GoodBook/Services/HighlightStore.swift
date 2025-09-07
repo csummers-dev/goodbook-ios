@@ -7,15 +7,18 @@ final class HighlightStore: ObservableObject {
 	@Published private(set) var highlights: [Highlight] = []
 	private let fileName = "highlights.json"
 
+	// MARK: - Lifecycle
 	init() {
 		load()
 	}
 
+	// MARK: - Querying
 	/// Return highlights for a specific book/chapter.
 	func highlights(for bookId: String, chapter: Int) -> [Highlight] {
 		highlights.filter { $0.range.bookId == bookId && $0.range.chapter == chapter }
 	}
 
+	// MARK: - Mutations
 	/// Insert or update a highlight by identity.
 	func upsert(_ highlight: Highlight) {
 		if let idx = highlights.firstIndex(where: { $0.id == highlight.id }) {
@@ -41,7 +44,6 @@ final class HighlightStore: ObservableObject {
 	#endif
 
 	// MARK: - Persistence
-
 	private func save() {
 		guard let url = storageURL() else { return }
 		do {

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Word position inside a verse. Index is 0-based.
+/// Word position inside a verse. `wordIndex` is 0-based.
 struct VerseWordPosition: Codable, Hashable {
 	let verse: Int
 	let wordIndex: Int

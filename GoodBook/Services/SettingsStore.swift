@@ -6,12 +6,14 @@ import Combine
 /// Avoids property observers during initialization to prevent accessing `self`
 /// before all stored properties are initialized.
 final class SettingsStore: ObservableObject {
+	// MARK: - Keys
 	// Keys for persistence; kept internal for future migration/sync
 	private static let keySelectedTranslation = "selectedTranslation"
 	private static let keyPreferredTheme = "preferredTheme"
 	private static let keyReaderFontSize = "readerFontSize"
     private static let keyLastHighlightColor = "lastHighlightColor"
 
+	// MARK: - Published settings
 	@Published var selectedTranslation: Translation
 	@Published var preferredTheme: Theme
 	@Published var readerFontSize: Double
@@ -21,6 +23,7 @@ final class SettingsStore: ObservableObject {
 	private let userDefaults: UserDefaults
 	private var cancellables: Set<AnyCancellable> = []
 
+	// MARK: - Init
 	/// Initialize from stored defaults, falling back to sensible values.
 	init(userDefaults: UserDefaults = .standard) {
 		self.userDefaults = userDefaults

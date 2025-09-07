@@ -19,14 +19,13 @@ final class ReadingViewModel: ObservableObject {
 		self.settings = settings
 	}
 
-	/// Configure dependencies after object initialization to satisfy SwiftUI's
-	/// `@StateObject` lifecycle.
+	/// Configures dependencies post-initialization to satisfy SwiftUI's `@StateObject` lifecycle.
 	func configure(provider: BibleDataProvider, settings: SettingsStore) {
 		self.provider = provider
 		self.settings = settings
 	}
 
-	/// Load the current book for the active translation.
+	/// Loads the current book for the active translation.
 	func load() async {
 		guard let provider, let settings else { return }
 		do {
@@ -37,7 +36,7 @@ final class ReadingViewModel: ObservableObject {
 		}
 	}
 
-	/// Reload when the translation changes.
+	/// Reloads when the translation changes.
 	func reloadForTranslationChange() async {
 		await load()
 	}
