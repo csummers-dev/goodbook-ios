@@ -4,6 +4,13 @@
 
 An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
 
+## Vision
+
+- Beautiful, clean, minimal Bible reading experience with no distractions.
+- Absolutely no ads, telemetry, analytics, or tracking.
+- Always free and open source.
+- Private by default; your data lives on your device.
+
 ## Highlights
 
 - Modular architecture: Models, Services, ViewModels, Views
@@ -11,6 +18,8 @@ An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
 - Translation-agnostic highlights with color and optional notes
 - Full-screen scrollable Reading view; toggle highlight visibility; translation switcher
 - Highlights list (grouped), Settings (theme, font size)
+- Privacy-first: no analytics or tracking; no third-party SDKs
+- Offline-first: reading works without a network connection
 
 ## Project structure
 
@@ -58,6 +67,12 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Views render state and forward user intents
   - ViewModels orchestrate loading, persistence, and UI state
   - Services encapsulate IO (bundle JSON, user defaults, local files)
+
+## Privacy
+
+- No analytics, tracking, or third-party SDKs.
+- No external network calls for core reading; content is bundled locally.
+- Highlights and settings are stored on-device. Future cloud features will be opt-in.
 
 - Services
   - `BibleDataProvider` protocol with `LocalJSONBibleProvider` implementation
