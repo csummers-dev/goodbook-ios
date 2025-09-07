@@ -23,7 +23,7 @@ jobs:
       - name: Install XcodeGen
         run: |
           brew update
-          brew install xcodegen || true
+          brew install xcodegen
 
       - name: Generate Xcode project
         run: xcodegen generate
