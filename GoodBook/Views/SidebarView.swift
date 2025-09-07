@@ -33,6 +33,7 @@ struct SidebarView: View {
 				Color.black.opacity(isOpen ? maxShadowOpacity : 0)
 					.ignoresSafeArea()
 					.accessibilityIdentifier("sidebar.scrim")
+					.accessibilityHidden(!isOpen)
 					.onTapGesture { withAnimation(.interactiveSpring()) { isOpen = false } }
 					.allowsHitTesting(isOpen)
 
@@ -44,9 +45,13 @@ struct SidebarView: View {
 					.shadow(radius: 8, x: 2, y: 0)
 					.gesture(dragGesture(drawerWidth: drawerWidth))
 			}
+			// NOTE(csummers-dev): The drawer currently snaps open/closed a bit too quickly.
+			// Keep as-is for now to ship the feature; revisit to tune spring response/damping
+			// for a slower, more polished feel without regressing gesture responsiveness.
 			.animation(.interactiveSpring(), value: isOpen)
 		}
 		.accessibilityIdentifier("sidebar.root")
+		.accessibilityHidden(!isOpen)
 	}
 
 	/// Compute the current X offset combining open state and in-flight drag.

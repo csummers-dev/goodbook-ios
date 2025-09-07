@@ -27,6 +27,7 @@ struct ContentView: View {
 							Button(action: { withAnimation(.interactiveSpring()) { isSidebarOpen = true } }) {
 								Image(systemName: "line.3.horizontal")
 							}
+							.accessibilityIdentifier("sidebar.button.open")
 						}
 						ToolbarItem(placement: .topBarTrailing) {
 							translationMenu
