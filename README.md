@@ -134,6 +134,7 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Reader display modes: verse-by-verse and paragraph layout
   - Toggle to show/hide verse numbers
   - Words of Jesus styling (red or blue, configurable)
+  - Contributor credits in future About page (UI, design, UX, code)
   - Cloud sync/backup for highlights and settings
   - Additional themes and font options; theme presets
   - Import/export of highlights and notes
