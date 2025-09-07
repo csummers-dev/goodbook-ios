@@ -115,14 +115,7 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
 
 ## Screenshots
 
-Place images in `AppResources/Images/README/`:
-
-- `AppResources/Images/README/app-icon-readme.png` — app icon preview used in README
-- `AppResources/Images/README/john-example-readme.png` — example reading screenshot (e.g., John 10, KJV)
-
-Embedded below once added:
-
-![App Icon](AppResources/Images/README/app-icon-readme.png)
+<img src="AppResources/Images/README/app-icon-readme.png" alt="App Icon" width="100" height="100" />
 
 ![Reading Example (John 10, KJV)](AppResources/Images/README/john-example-readme.png)
 
