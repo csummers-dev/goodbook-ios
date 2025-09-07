@@ -117,7 +117,7 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
 
 <img src="AppResources/Images/README/app-icon-readme.png" alt="App Icon" width="100" height="100" />
 
-![Reading Example (John 10, KJV)](AppResources/Images/README/john-example-readme.png)
+<img src="AppResources/Images/README/john-example-readme.png" alt="Reading Example (John 10, KJV)" width="50%" height="50%" />
 
 ## Feature status
 
