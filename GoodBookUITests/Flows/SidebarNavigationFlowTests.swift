@@ -14,11 +14,14 @@ final class SidebarNavigationFlowTests: XCTestCase {
         // Section headers must be visible; scroll to realize offscreen headers due to lazy rendering
         let sidebar = app.descendants(matching: .any)["sidebar.root"]
         XCTAssertTrue(sidebar.exists)
-        let scroll = app.scrollViews.firstMatch
+        // Use the sidebar's own scroll view (the root is exposed as a ScrollView)
+        let scroll = app.scrollViews["sidebar.root"]
         XCTAssertTrue(scroll.waitForExistence(timeout: 2))
         // Old Testament should be at top
         let ot = app.descendants(matching: .any)["sidebar.section.ot"]
         XCTAssertTrue(ot.exists)
+        // Seeded book (Genesis) should be visible before any scrolling
+        XCTAssertTrue(app.descendants(matching: .any)["sidebar.book.Gen"].exists)
         // Scroll down to realize Apocrypha and New Testament headers if needed
         scroll.swipeUp()
         scroll.swipeUp()
@@ -29,10 +32,7 @@ final class SidebarNavigationFlowTests: XCTestCase {
         XCTAssertTrue(nt.waitForExistence(timeout: 2))
         // Header remains visible after scroll (pinned overlay behavior)
         XCTAssertTrue(ot.exists)
-        // Seeded book should exist near top
-        let gen = app.descendants(matching: .any)["sidebar.book.Gen"]
-        if !gen.exists { scroll.swipeDown() }
-        XCTAssertTrue(gen.waitForExistence(timeout: 2))
+        // No need to re-verify Genesis after scrolling
 
         // Close by tapping outside
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
