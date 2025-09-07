@@ -1,0 +1,17 @@
+{
+  "id": "John",
+  "name": "John",
+  "chapters": [
+    {
+      "number": 10,
+      "verses": [
+        { "number": 10, "text": "[Placeholder NRSV] John 10:10" },
+        { "number": 11, "text": "[Placeholder NRSV] John 10:11" },
+        { "number": 12, "text": "[Placeholder NRSV] John 10:12" }
+      ]
+    }
+  ]
+}
+
+
+

@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+*.xcworkspace/xcuserdata/
+
+# SwiftPM / Builds
+.build/
+.swiftpm/
+
+# XcodeGen: ignore generated project (Option B)
+GoodBook.xcodeproj/
+
+# Editors
+.idea/
+.vscode/
+

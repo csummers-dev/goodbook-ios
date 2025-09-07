@@ -1,0 +1,60 @@
+name: iOS Build & Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Homebrew
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/Cellar
+            /opt/homebrew/Cellar
+          key: brew-${{ runner.os }}-${{ hashFiles('project.yml') }}
+
+      - name: Install XcodeGen
+        run: |
+          brew update
+          brew install xcodegen || true
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: /tmp/goodbook_dd
+          key: deriveddata-${{ runner.os }}-${{ hashFiles('**/*.swift', 'project.yml') }}
+          restore-keys: |
+            deriveddata-${{ runner.os }}-
+
+      - name: Build & Test (Unit + UI)
+        run: |
+          xcodebuild -project GoodBook.xcodeproj \
+            -scheme GoodBook \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath /tmp/goodbook_dd \
+            test | xcpretty || true
+          # Rerun without xcpretty if not installed
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            set -e
+            xcodebuild -project GoodBook.xcodeproj \
+              -scheme GoodBook \
+              -sdk iphonesimulator \
+              -configuration Debug \
+              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -derivedDataPath /tmp/goodbook_dd \
+              test
+          fi
+
+
