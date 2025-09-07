@@ -1,5 +1,7 @@
 # Good Book (iOS, SwiftUI)
 
+[![iOS Build & Test](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml/badge.svg)](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml)
+
 An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
 
 ## Highlights
@@ -63,6 +65,24 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - `HighlightStore` JSON persistence (Documents directory)
   - `SettingsStore` persists translation, theme, font size, and last-used highlight color via `UserDefaults`
 
+### Navigation: Sidebar drawer (Books)
+
+- Overview: A swipeable left sidebar shows the canon grouped by sections: Old Testament, Apocrypha, and New Testament. Built with `ScrollView` + `LazyVStack` for precise control over gestures and animations.
+- Gestures:
+  - Open: toolbar button (top-left) or left-edge swipe (drag right)
+  - Close: tap scrim (dimmed overlay) or swipe drawer left
+  - Animations: interactive spring for smooth, responsive transitions
+- Availability rules:
+  - All sections are always shown for discoverability
+  - Books without a bundled JSON for the current translation are disabled and greyed out
+  - Future: optionally filter to only show available books
+- Accessibility and testing:
+  - Sidebar root: `sidebar.root`
+  - Scrim: `sidebar.scrim`
+  - Section headers: `sidebar.section.ot`, `sidebar.section.apocrypha`, `sidebar.section.nt`
+  - Book row: `sidebar.book.<BookId>`
+  - Disabled rows expose the disabled state to assistive technologies
+
 ## Feature status
 
 - Completed
@@ -116,6 +136,10 @@ Notes: This section is intended to be living documentation. Maintain by moving i
     - `Screens/` page objects (e.g., `ReadingScreen`)
     - `Flows/` end-to-end flows (e.g., `LaunchAndRenderFlowTests`)
     - `Utils/` shared helpers (e.g., `LaunchArguments`)
+
+- Sidebar tests
+  - Unit: `TranslationAvailabilityServiceTests` verifies per-translation book existence checks
+  - UI: `SidebarNavigationFlowTests` verifies open/close gestures and section/book rendering
 
 - Running tests
 ```bash
