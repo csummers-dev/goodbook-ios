@@ -97,33 +97,34 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - App renaming and identifiers updated to Good Book / `GoodBook`
   - Reading view renders a book from bundled JSON via `LocalJSONBibleProvider`
   - Robust resource lookup supports `AppResources/Bibles/<TRANSLATION>/<Book>.json`
-  - Translation picker in the toolbar; view model reloads on change (data loads when assets exist)
-  - Highlight create/edit/delete with color coding and optional notes
-    - Context menu per verse and bottom action bar after long-press selection
+  - Translation picker in the toolbar with automatic reload on change
+  - Highlights: create/edit/delete with color coding and optional notes
+    - Context menu per verse and a bottom action bar after long-press selection
     - Toggle to show/hide highlights while reading
-    - Translation-agnostic storage using `VerseRange`
-    - Persistence to local JSON with `HighlightStore`
+    - Translation-agnostic storage using `VerseRange`; persisted via `HighlightStore`
     - Remembers last-used highlight color for new highlights
-    - Editor lifecycle: Save/Cancel dismiss the editor and return to Reading
-  - Settings for preferred theme and reader font size (stored in `UserDefaults`)
-  - Basic Highlights list view; basic navigation to Settings and Highlights
+  - Sidebar drawer navigator for all books with pinned section headers and disabled rows for unavailable books
+  - Placeholder translation files for all 66 canonical books across `KJV`, `NKJV`, `ESV`, `NIV`, `CSB`, `NRSV` to support UI/dev
+  - Settings for preferred theme and reader font size (`UserDefaults`-backed)
+  - Basic Highlights list view; navigation to Settings and Highlights
 
 - In progress
-  - Selection UX: refine long-press selection to true word-by-word and multi-verse ranges
-    - Current state: verse-level approximation with action bar and notes option
+  - Selection UX: refine long-press selection to true word-by-word and multi-verse ranges (currently verse-level)
   - Highlights list: grouping by book → chapter and filtering/sorting by color
-  - Multi-translation datasets beyond ESV (switching is wired; assets to be added)
-  - Navigator to open any book (single-book demo now; code prepared for expansion)
+  - Sidebar/drawer gesture polish (tune open/close spring for a smoother feel)
+  - Populate full-text datasets beyond seeded placeholders for additional translations
 
 - Planned
+  - About page and application description in the Settings page
+  - Font type selections (in addition to size)
+  - Sharing highlights with others
   - Cloud sync/backup for highlights and settings
   - Additional themes and font options; theme presets
   - Import/export of highlights and notes
   - Global search across text and notes; quick-jump to references
-  - Full navigator UI for books/chapters/verses
   - Performance profiling with large datasets; memory-efficient rendering
   - Accessibility improvements (Dynamic Type, VoiceOver cues)
-  - Unit/UI tests and snapshot tests for views
+  - Snapshot tests for views
 
 Notes: This section is intended to be living documentation. Maintain by moving items between lists as features ship or begin.
 
@@ -230,6 +231,12 @@ Loading behavior:
 
 - Simulator noise (safe to ignore)
   - `eligibility.plist` and CA Event logs are benign and unrelated to install or content loading
+
+## Known issues
+
+- Settings theme not updating live
+  - Symptom: When the user changes the theme in Settings, the Settings screen’s colors do not update immediately; colors only refresh after closing and reopening Settings.
+  - Acceptance criteria: Settings view updates in-place when the theme changes, consistent with the rest of the app.
 
 ## Contributing notes
 
