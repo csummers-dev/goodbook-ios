@@ -1,0 +1,19 @@
+{
+  "id": "Jon",
+  "name": "Jonah",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        {
+          "number": 1,
+          "text": "[Placeholder NRSV] Jonah 1:1"
+        },
+        {
+          "number": 2,
+          "text": "[Placeholder NRSV] Jonah 1:2"
+        }
+      ]
+    }
+  ]
+}

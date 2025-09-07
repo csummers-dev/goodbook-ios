@@ -41,6 +41,10 @@ targets:
     platform: iOS
     sources:
       - path: GoodBookTests
+        excludes:
+          - "**/Fixtures/Bibles/**"
+      - path: GoodBookTests/Fixtures/Bibles
+        type: folder
     dependencies:
       - target: GoodBook
     settings:

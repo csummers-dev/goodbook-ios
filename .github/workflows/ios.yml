@@ -57,4 +57,27 @@ jobs:
               test
           fi
 
+      - name: Update README build version (main only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DATE_UTC=$(date -u +"%Y-%m-%d %H:%M:%SZ")
+          MSG="Latest: ${SHORT_SHA} (${DATE_UTC})"
+          awk -v msg="$MSG" '
+            BEGIN{inblk=0}
+            /<!-- build-version: start -->/{print; inblk=1; getline; print msg; while(getline){ if($0 ~ /<!-- build-version: end -->/){ print; inblk=0; next } }}
+            { if(!inblk) print }
+          ' README.md > README.md.tmp
+          mv README.md.tmp README.md
+          if git diff --quiet README.md; then
+            echo "No README changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs(readme): update build version to ${SHORT_SHA} [skip ci]"
+          git push
+
 

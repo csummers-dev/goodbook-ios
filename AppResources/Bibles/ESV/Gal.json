@@ -1,0 +1,19 @@
+{
+  "id": "Gal",
+  "name": "Galatians",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        {
+          "number": 1,
+          "text": "[Placeholder ESV] Galatians 1:1"
+        },
+        {
+          "number": 2,
+          "text": "[Placeholder ESV] Galatians 1:2"
+        }
+      ]
+    }
+  ]
+}

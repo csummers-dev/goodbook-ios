@@ -1,0 +1,19 @@
+{
+  "id": "Dan",
+  "name": "Daniel",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        {
+          "number": 1,
+          "text": "[Placeholder CSB] Daniel 1:1"
+        },
+        {
+          "number": 2,
+          "text": "[Placeholder CSB] Daniel 1:2"
+        }
+      ]
+    }
+  ]
+}
