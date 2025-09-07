@@ -1,9 +1,6 @@
 import SwiftUI
 
-/// Root container that hosts the reading screen, global toolbar, and sidebar integration.
-/// - What: Presents `ReadingView` and overlays a left drawer (`SidebarView`).
-/// - Why: Centralizes navigation and global UI controls at a single composition point.
-/// - How: Uses a `ZStack` to layer a `NavigationStack` under a swipeable drawer and scrim.
+/// Root container view that hosts the reading screen and global toolbar.
 struct ContentView: View {
 	@EnvironmentObject private var env: AppEnvironment
 	@EnvironmentObject private var settings: SettingsStore
@@ -13,7 +10,6 @@ struct ContentView: View {
 	@State private var selectedBookId: String = "John"
 	@State private var showSettings = false
 	@State private var showHighlights = false
-	/// Sidebar open state. Toggled via toolbar button, left-edge drag, scrim tap, or drawer drag.
 	@State private var isSidebarOpen = false
 
 	var body: some View {
@@ -21,7 +17,7 @@ struct ContentView: View {
 			NavigationStack {
 				ReadingView(bookId: selectedBookId)
 					.accessibilityIdentifier("reading.root")
-					.navigationTitle(selectedBookId)
+					.navigationTitle(BibleCatalog.displayName(for: selectedBookId))
 					.toolbar {
 						ToolbarItem(placement: .topBarLeading) {
 							Button(action: { withAnimation(.interactiveSpring()) { isSidebarOpen = true } }) {
@@ -29,20 +25,15 @@ struct ContentView: View {
 							}
 							.accessibilityIdentifier("sidebar.button.open")
 						}
-						ToolbarItem(placement: .topBarTrailing) {
+						ToolbarItemGroup(placement: .topBarTrailing) {
 							translationMenu
-						}
-						ToolbarItem(placement: .topBarTrailing) {
 							Button { showHighlights = true } label: { Image(systemName: "highlighter") }
-						}
-						ToolbarItem(placement: .topBarTrailing) {
 							Button { showSettings = true } label: { Image(systemName: "gear") }
 						}
 					}
 			}
 
 			// Left-edge swipe region to open the drawer.
-			// Using a thin, transparent view keeps normal content interactions intact when the sidebar is closed.
 			Color.clear
 				.contentShape(Rectangle())
 				.frame(width: 12)
@@ -63,7 +54,6 @@ struct ContentView: View {
 	}
 
 	/// Translation picker displayed in the toolbar.
-	/// - Presents all `Translation` cases and binds to `SettingsStore.selectedTranslation`.
 	private var translationMenu: some View {
 		Menu {
 			Picker("Translation", selection: $settings.selectedTranslation) {

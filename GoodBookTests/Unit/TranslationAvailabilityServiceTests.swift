@@ -2,16 +2,15 @@ import XCTest
 @testable import GoodBook
 
 final class TranslationAvailabilityServiceTests: XCTestCase {
-    func test_isBookAvailable_true_when_resource_exists() {
+    func test_isBookAvailable_true_when_seed_exists() {
         let service = TranslationAvailabilityService(bundle: .main)
-        // ESV/John.json exists in the app bundle resources.
-        XCTAssertTrue(service.isBookAvailable(bookId: "John", translation: .esv))
+        XCTAssertTrue(service.isBookAvailable(bookId: "Gen", translation: .esv))
     }
 
-    func test_isBookAvailable_false_when_resource_missing() {
+    func test_isBookAvailable_false_when_missing() {
         let service = TranslationAvailabilityService(bundle: .main)
-        // Use a book that we don't bundle at all to ensure false.
-        XCTAssertFalse(service.isBookAvailable(bookId: "NonexistentBookXYZ", translation: .esv))
+        // Use a non-canonical fake id to ensure negative path remains valid
+        XCTAssertFalse(service.isBookAvailable(bookId: "ZZZ_NONEXISTENT", translation: .niv))
     }
 }
 

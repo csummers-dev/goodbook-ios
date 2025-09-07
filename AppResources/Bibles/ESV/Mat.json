@@ -1,0 +1,14 @@
+{
+  "id": "Mat",
+  "name": "Matthew",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        { "number": 1, "text": "[Placeholder ESV] The book of the genealogy of Jesus Christ..." },
+        { "number": 2, "text": "[Placeholder ESV] Abraham was the father of Isaac..." }
+      ]
+    }
+  ]
+}
+

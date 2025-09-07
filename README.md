@@ -1,6 +1,12 @@
 # Good Book (iOS, SwiftUI)
 
-[![iOS Build & Test](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml/badge.svg)](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml)
+[![iOS Build & Test](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml/badge.svg?branch=main)](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml)
+
+## Build version (auto-updated on main)
+
+<!-- build-version: start -->
+Latest: pending (will update after first push to main)
+<!-- build-version: end -->
 
 An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
 
@@ -64,24 +70,31 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
     - Searches multiple bundle layouts: `Bibles/...`, `AppResources/Bibles/...`, and fallbacks
   - `HighlightStore` JSON persistence (Documents directory)
   - `SettingsStore` persists translation, theme, font size, and last-used highlight color via `UserDefaults`
+  - `TranslationAvailabilityService` checks for `AppResources/Bibles/<TRANSLATION>/<BookId>.json` existence (no decoding) to drive disabled state
 
 ### Navigation: Sidebar drawer (Books)
 
 - Overview: A swipeable left sidebar shows the canon grouped by sections: Old Testament, Apocrypha, and New Testament. Built with `ScrollView` + `LazyVStack` for precise control over gestures and animations.
 - Gestures:
   - Open: toolbar button (top-left) or left-edge swipe (drag right)
-  - Close: tap scrim (dimmed overlay) or swipe drawer left
-  - Animations: interactive spring for smooth, responsive transitions
+  - Close: tap outside (scrim) or swipe drawer left
+  - Animations: interactive spring; currently opens quickly (to be tuned later)
+- Headers:
+  - Rendered as pinned `Section` headers; remain visible while scrolling.
+  - Uses system `secondaryLabel` color for reliable contrast across light/dark themes.
 - Availability rules:
-  - All sections are always shown for discoverability
-  - Books without a bundled JSON for the current translation are disabled and greyed out
-  - Future: optionally filter to only show available books
+  - All sections and books are always shown for discoverability
+  - Books without a bundled JSON for the current translation are disabled and greyed out (theme-aware gray)
+  - Future: optionally show a hint when tapping disabled rows
+- Titles:
+  - The navigation title uses the catalog's full book name (e.g., `Genesis` instead of `Gen`).
+  - A unit test verifies the `BibleCatalog.displayName(for:)` mapping to prevent regressions.
 - Accessibility and testing:
   - Sidebar root: `sidebar.root`
   - Scrim: `sidebar.scrim`
   - Section headers: `sidebar.section.ot`, `sidebar.section.apocrypha`, `sidebar.section.nt`
   - Book row: `sidebar.book.<BookId>`
-  - Disabled rows expose the disabled state to assistive technologies
+  - UI tests assert section headers exist to prevent regressions where headers are not visible.
 
 ## Feature status
 
@@ -137,10 +150,6 @@ Notes: This section is intended to be living documentation. Maintain by moving i
     - `Flows/` end-to-end flows (e.g., `LaunchAndRenderFlowTests`)
     - `Utils/` shared helpers (e.g., `LaunchArguments`)
 
-- Sidebar tests
-  - Unit: `TranslationAvailabilityServiceTests` verifies per-translation book existence checks
-  - UI: `SidebarNavigationFlowTests` verifies open/close gestures and section/book rendering
-
 - Running tests
 ```bash
 xcodegen generate
@@ -187,17 +196,12 @@ Add more translations/books by placing additional JSON files under `AppResources
 
 ### Placeholder translations
 
-To support UI development across multiple translations before full text is added, the app includes placeholder JSON files for John 10:10–12 in the following translations:
+To support UI development across multiple translations before full text is added, the app includes placeholder JSON files for all 66 canonical books across supported translations.
 
-- `KJV`, `NKJV`, `NIV`, `CSB`, `NRSV`
-
-Each placeholder lives at:
-
-```
-AppResources/Bibles/<TRANSLATION>/John.json
-```
-
-and follows the same schema with simple marker text such as `[Placeholder NIV] John 10:10`. This allows switching translations in the UI without errors until licensed text is provided.
+- Translations: `KJV`, `NKJV`, `ESV`, `NIV`, `CSB`, `NRSV`
+- Location: `AppResources/Bibles/<TRANSLATION>/<BookId>.json` (e.g., `AppResources/Bibles/ESV/Gen.json`)
+- Content: two stub verses in chapter 1 with marker text like `[Placeholder NIV] Genesis 1:1`
+- Apocrypha: opt-in; currently only `Tobit (Tob)` seeded for demonstration
 
 Loading behavior:
 

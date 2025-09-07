@@ -1,0 +1,19 @@
+{
+  "id": "Php",
+  "name": "Philippians",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        {
+          "number": 1,
+          "text": "[Placeholder KJV] Philippians 1:1"
+        },
+        {
+          "number": 2,
+          "text": "[Placeholder KJV] Philippians 1:2"
+        }
+      ]
+    }
+  ]
+}

@@ -1,31 +1,29 @@
 import Foundation
 
-/// Answers whether a given book resource exists for a translation in the app bundle.
-/// - Purpose: Allow UI to disable navigation targets that lack assets for the selected translation.
-/// - Rationale: Mirrors the `LocalJSONBibleProvider` lookup paths without decoding data.
-struct TranslationAvailabilityService {
-	private let bundle: Bundle
+/// Service to determine if a specific Bible book resource exists for a translation.
+/// - What: Checks for presence of `AppResources/Bibles/<TRANSLATION>/<BookId>.json` in the bundle.
+/// - Why: Drives UI availability (enabled/disabled) without decoding content.
+final class TranslationAvailabilityService {
+    private let bundle: Bundle
 
-	/// Initialize with a bundle (defaults to main). Tests can inject a custom bundle.
-	init(bundle: Bundle = .main) { self.bundle = bundle }
+    init(bundle: Bundle = .main) {
+        self.bundle = bundle
+    }
 
-	/// Return true if a JSON resource for the book exists under any supported path for the translation.
-	func isBookAvailable(bookId: String, translation: Translation) -> Bool {
-		let fileName = bookId
-		let candidateSubdirs = [
-			"Bibles/\(translation.rawValue)",
-			"Resources/Bibles/\(translation.rawValue)",
-			"AppResources/Bibles/\(translation.rawValue)",
-			"Contents/Resources/Bibles/\(translation.rawValue)",
-			"Contents/AppResources/Bibles/\(translation.rawValue)",
-		]
-		for subdir in candidateSubdirs {
-			if bundle.url(forResource: fileName, withExtension: "json", subdirectory: subdir) != nil {
-				return true
-			}
-		}
-		return false
-	}
+    /// Returns true if the JSON resource for the given book/translation exists in the bundle.
+    func isBookAvailable(bookId: String, translation: Translation) -> Bool {
+        let fileName = bookId
+        let subpath = "AppResources/Bibles/\(translation.rawValue)/\(fileName)"
+        // Locate JSON under sub-bundle path; support both flat and nested resources when packaged.
+        if let url = bundle.url(forResource: subpath, withExtension: "json") {
+            return FileManager.default.fileExists(atPath: url.path)
+        }
+        // Fallback: try exact folder reference resolution if the toolchain flattens differently.
+        if let url = bundle.url(forResource: fileName, withExtension: "json", subdirectory: "AppResources/Bibles/\(translation.rawValue)") {
+            return FileManager.default.fileExists(atPath: url.path)
+        }
+        return false
+    }
 }
 
 

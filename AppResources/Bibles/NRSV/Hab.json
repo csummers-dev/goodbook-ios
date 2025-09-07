@@ -1,0 +1,19 @@
+{
+  "id": "Hab",
+  "name": "Habakkuk",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        {
+          "number": 1,
+          "text": "[Placeholder NRSV] Habakkuk 1:1"
+        },
+        {
+          "number": 2,
+          "text": "[Placeholder NRSV] Habakkuk 1:2"
+        }
+      ]
+    }
+  ]
+}

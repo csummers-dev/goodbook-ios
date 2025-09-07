@@ -93,26 +93,38 @@ struct SidebarView: View {
 				.padding(.vertical, 12)
 			Divider()
 			ScrollView {
-				LazyVStack(alignment: .leading, spacing: 0, pinnedViews: []) {
+				// Use Section + pinned headers so group titles remain visible while scrolling.
+				// Note: LazyVStack only instantiates views on-screen; UI tests must scroll to realize later headers.
+				LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
 					ForEach(BibleCatalog.allGroupsInOrder, id: \.group) { section in
-						sectionHeader(section.group)
-						ForEach(section.books) { book in
-							bookRow(book)
+						Section(header: sectionHeader(section.group)) {
+							ForEach(section.books) { book in
+								bookRow(book)
+							}
 						}
 					}
 				}
 			}
+			.accessibilityIdentifier("sidebar.scroll")
 		}
 	}
 
 	@ViewBuilder
 	private func sectionHeader(_ group: BibleCatalog.Group) -> some View {
 		Text(group.rawValue)
-			.font(.footnote.weight(.semibold))
-			.foregroundStyle(.secondary)
+			.font(.callout.weight(.semibold))
+			.foregroundColor(Color(UIColor.secondaryLabel))
 			.padding(.horizontal)
-			.padding(.top, 12)
+			.padding(.vertical, 8)
+			// Background ensures content scrolling underneath is not visible through the header.
+			.background(.ultraThinMaterial)
+			// Subtle divider for separation.
+			.overlay(alignment: .bottom) { Divider().opacity(0.5) }
+			// Slight elevation to keep the header above rows.
+			.zIndex(1)
+			.accessibilityElement()
 			.accessibilityIdentifier(identifierFor(group))
+			.accessibilityAddTraits(.isHeader)
 	}
 
 	private func identifierFor(_ group: BibleCatalog.Group) -> String {
@@ -129,7 +141,7 @@ struct SidebarView: View {
 		Button(action: { if available { onSelectBook(meta.id); isOpen = false } }) {
 			HStack {
 				Text(meta.name)
-					.foregroundStyle(available ? .primary : .secondary)
+					.foregroundStyle(available ? .primary : AppColors.disabledContent)
 				Spacer()
 			}
 			.padding(.horizontal)

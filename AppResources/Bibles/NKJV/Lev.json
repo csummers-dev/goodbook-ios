@@ -1,0 +1,19 @@
+{
+  "id": "Lev",
+  "name": "Leviticus",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        {
+          "number": 1,
+          "text": "[Placeholder NKJV] Leviticus 1:1"
+        },
+        {
+          "number": 2,
+          "text": "[Placeholder NKJV] Leviticus 1:2"
+        }
+      ]
+    }
+  ]
+}

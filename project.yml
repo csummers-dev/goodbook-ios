@@ -40,15 +40,9 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      # Exclude the Bibles fixtures from normal file references to avoid flattening
-      # and duplicate resource names in the test bundle. We'll add them back below
-      # as a folder reference so the subdirectory structure (Bibles/<TRANSLATION>/)
-      # is preserved inside the .xctest bundle.
       - path: GoodBookTests
         excludes:
           - "**/Fixtures/Bibles/**"
-      # Add Bibles fixtures as a folder reference (blue folder) so resources are
-      # copied with their directory hierarchy (prevents 'John.json' name collisions).
       - path: GoodBookTests/Fixtures/Bibles
         type: folder
     dependencies:

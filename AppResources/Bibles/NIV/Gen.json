@@ -1,0 +1,14 @@
+{
+  "id": "Gen",
+  "name": "Genesis",
+  "chapters": [
+    {
+      "number": 1,
+      "verses": [
+        { "number": 1, "text": "[Placeholder NIV] In the beginning God created the heavens and the earth." },
+        { "number": 2, "text": "[Placeholder NIV] Now the earth was formless and empty..." }
+      ]
+    }
+  ]
+}
+
