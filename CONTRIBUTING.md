@@ -6,7 +6,7 @@ Thanks for your interest in contributing!
 
 - Default branch: `main`
 - Branch off `main` using `feature/<branch-name>`
-- Open a PR to `main`; CI must pass and a review from `@corywatch` is required
+- Open a PR to `main`; CI must pass and a review from `@csummers-dev` is required
 
 ## Project generation (XcodeGen only)
 
