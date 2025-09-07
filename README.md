@@ -2,12 +2,6 @@
 
 [![iOS Build & Test](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml/badge.svg?branch=main)](https://github.com/csummers-dev/goodbook-ios/actions/workflows/ios.yml)
 
-## Build version (auto-updated on main)
-
-<!-- build-version: start -->
-Latest: pending (will update after first push to main)
-<!-- build-version: end -->
-
 An iOS Bible reading, journaling, and study app built with SwiftUI and MVVM.
 
 ## Highlights
@@ -155,6 +149,14 @@ Notes: This section is intended to be living documentation. Maintain by moving i
 xcodegen generate
 xcodebuild -project GoodBook.xcodeproj -scheme GoodBook -sdk iphonesimulator -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' -derivedDataPath /tmp/goodbook_dd test
 ```
+
+Local verification (2025-09-07):
+
+- Built with `xcodegen generate` and `xcodebuild test`
+- Unit tests: 8 passed
+- UI tests: 3 passed
+- Simulator: iPhone 16 (iOS 18.6)
+- Commit: a47b509
 
 - UI test mode
   - The app checks for `-uiTestMode` launch argument and resets highlights for deterministic runs.
