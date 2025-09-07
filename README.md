@@ -116,6 +116,9 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Navigator to open any book (single-book demo now; code prepared for expansion)
 
 - Planned
+  - Reader display modes: verse-by-verse and paragraph layout
+  - Toggle to show/hide verse numbers
+  - Words of Jesus styling (red or blue, configurable)
   - Cloud sync/backup for highlights and settings
   - Additional themes and font options; theme presets
   - Import/export of highlights and notes
