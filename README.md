@@ -119,6 +119,32 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
 
 <img src="AppResources/Images/README/john-example-readme.png" alt="Reading Example (John 10, KJV)" width="50%" height="50%" />
 
+## App Icon
+
+The app icon is managed via an asset catalog and compiled by Xcode:
+
+- Location: `GoodBook/Assets.xcassets/AppIcon.appiconset/`
+- Config: The target is already set to use `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` (see `project.yml`).
+- Contents: `Contents.json` declares the standard iPhone, iPad, and App Store sizes.
+
+To generate all required PNGs from a 1024×1024 master (`AppIcon-1024.png`):
+
+```bash
+cd GoodBook/Assets.xcassets/AppIcon.appiconset
+# Example using macOS sips to create each size from the 1024px source
+for spec in \
+  "20@2x:40" "20@3x:60" "29@2x:58" "29@3x:87" "40@2x:80" "40@3x:120" \
+  "60@2x:120" "60@3x:180" "20:20" "20@2x-ipad:40" "29:29" "29@2x-ipad:58" \
+  "40:40" "40@2x-ipad:80" "76:76" "76@2x:152" "83.5@2x:167"; do \
+  name=${spec%%:*}; size=${spec##*:}; out="AppIcon-${name}.png"; \
+  sips -s format png -z $size $size AppIcon-1024.png --out "$out" >/dev/null; \
+done
+```
+
+Notes:
+- App Store (1024px) must be non‑transparent; do not round corners in source (iOS masks automatically).
+- If you update the artwork, regenerate the sizes or re-export via a design tool.
+
 ## Feature status
 
 - Completed
@@ -140,6 +166,7 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Reader text sizing/wrapping fixed: no cutoff; full-screen scrollable content
   - Verse numbers styled smaller and higher (superscript-like), theme-aware lighter color
   - Highlights visually include spaces between words for continuous background
+  - App icon asset catalog configured; sizes generated from 1024px master
 
 - In progress
   - Highlights list: grouping by book → chapter and filtering/sorting by color
@@ -151,7 +178,6 @@ Note: This repository uses `GoodBook.xcodeproj` generated from `project.yml`. Le
   - Toggle to show/hide verse numbers
   - Words of Jesus styling (red or blue, configurable)
   - Contributor credits in future About page (UI, design, UX, code)
-  - App icon
   - Font type selections
   - Sharing highlights with others
   - Cloud sync/backup for highlights and settings
@@ -271,6 +297,44 @@ Loading behavior:
 
 - Simulator noise (safe to ignore)
   - `eligibility.plist` and CA Event logs are benign and unrelated to install or content loading
+
+- CI: `xcodegen: command not found`
+  - Cause: XcodeGen is installed but not linked, or Homebrew's bin directory isn't on PATH on the runner.
+  - Fix (GitHub Actions step):
+    ```yaml
+    - name: Install XcodeGen
+      run: |
+        brew update
+        brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+        brew link --overwrite xcodegen || true
+        echo "/usr/local/bin" >> $GITHUB_PATH
+        echo "/opt/homebrew/bin" >> $GITHUB_PATH
+        echo "$(brew --prefix)/bin" >> $GITHUB_PATH
+        command -v xcodegen || true
+        xcodegen -version || true
+    - name: Generate Xcode project
+      run: xcodegen generate
+    ```
+
+- UI tests: selection signals never appear
+  - Ensure the chapter text view exists, is hittable, and contains non-empty text before gestures.
+  - Tap to focus the element, then long-press and apply a tiny nudge drag; fall back to double-tap + nudge.
+  - Use helpers (see `GoodBookUITests/Utils/UITestSelectionUtils.swift`): `waitForAnySelectionSignal(...)` and `nudgeSelection(...)`.
+  - Confirm accessibility identifiers are present (e.g., `reading.chapter.10`, `reading.actionbar`, `reading.action.highlight`).
+
+- Text selection issues (in app)
+  - Long‑press does nothing / double‑tap selects too much:
+    - Verify `SelectableChapterTextView` sets `isEditable = false`, `isSelectable = true`, `isUserInteractionEnabled = true`.
+    - Ensure gestures are attached: `UILongPressGestureRecognizer` (min ~0.5s) and `UITapGestureRecognizer` (double‑tap) with `delegate = coordinator`.
+    - Prefer `UITextInput` APIs (`closestPosition`, `tokenizer.rangeEnclosingPosition`) over TextKit 1 (`layoutManager`) to avoid compatibility mode.
+  - Selection handles don’t drag / menu shows no actions:
+    - Subclass `UITextView` to always allow Copy when `selectedRange.length > 0` (see `SelectionTextView`).
+    - Implement `gestureRecognizer(_:shouldRecognizeSimultaneouslyWith:) -> true` and bail out in `gestureRecognizerShouldBegin` when near selection handles.
+  - “Modifying state during view update” warning:
+    - Dispatch `onSelectionChange` to the main queue asynchronously (e.g., `DispatchQueue.main.async { ... }`).
+  - Reader text appears cut off:
+    - Set vertical hugging/compression to `.required` and provide `sizeThatFits` in `UIViewRepresentable`.
+    - Disable inner scrolling (`isScrollEnabled = false`) so SwiftUI’s scroll view sizes correctly.
 
 ## Contributing notes
 
